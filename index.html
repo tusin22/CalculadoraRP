@@ -6,23 +6,32 @@
     <title>Calculadora de Descontos</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f9; }
-        .app-wrapper { max-width: 550px; }
+        .app-wrapper { max-width: 600px; } /* Aumentei um pouquinho pra caber o X */
         .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 15px; }
         input, select, button { padding: 10px; margin: 5px 0; width: 100%; box-sizing: border-box; }
-        button { background-color: #28a745; color: white; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; }
-        button:hover { background-color: #218838; }
+        
+        button.btn-calcular { background-color: #28a745; color: white; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; }
+        button.btn-calcular:hover { background-color: #218838; }
+        
         .botoes-acao { margin-top: 10px; display: flex; gap: 10px; }
-        .btn-baixar { background-color: #007bff; flex: 1; margin: 0; }
+        .btn-baixar { background-color: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; padding: 10px; flex: 1; }
         .btn-baixar:hover { background-color: #0056b3; }
-        .btn-limpar { background-color: #dc3545; flex: 1; margin: 0; }
+        .btn-limpar { background-color: #dc3545; color: white; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; padding: 10px; flex: 1; }
         .btn-limpar:hover { background-color: #c82333; }
+        
         table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; font-size: 13px; }
         th, td { border: 1px solid #ddd; padding: 6px; text-align: center; }
         th { background-color: #343a40; color: white; }
-        .resumo { background: #e9ecef; padding: 15px; border-radius: 8px; font-weight: bold; font-size: 14px; }
+        
+        .resumo { background: #e9ecef; padding: 15px; border-radius: 8px; font-weight: bold; font-size: 14px; line-height: 1.5; }
+        
         table th:nth-child(4), table td:nth-child(4) { background-color: #fff0c2; }
         table thead th:nth-child(4) { color: #212529; }
         table tbody td:nth-child(4) { font-weight: bold; }
+
+        /* Estilo pro botão de apagar a linha */
+        .btn-excluir { background: none; border: none; color: red; cursor: pointer; font-size: 16px; padding: 0; width: auto; margin: 0; }
+        .btn-excluir:hover { transform: scale(1.2); }
     </style>
 </head>
 <body>
@@ -43,18 +52,19 @@
                 <option value="11">11%</option>
             </select>
             
-            <button onclick="calcular()">Calcular e Adicionar</button>
+            <button class="btn-calcular" onclick="calcular()">Calcular e Adicionar</button>
         </div>
 
         <div class="resumo">
             Totais da Sessão: <br>
             Qtd: <span id="totQtd">0</span> | 
             Orig: R$ <span id="totOriginal">0</span> | 
-            Final: R$ <span id="totFinal">0</span>
+            Final: R$ <span id="totFinal">0</span> | 
+            Lucro: R$ <span id="totLucro">0</span>
             
             <div class="botoes-acao">
                 <button class="btn-baixar" onclick="baixarPlanilha()">Baixar (CSV)</button>
-                <button class="btn-limpar" onclick="limparHistorico()">Limpar</button>
+                <button class="btn-limpar" onclick="limparHistorico()">Limpar Tudo</button>
             </div>
         </div>
 
@@ -67,6 +77,7 @@
                     <th>Final</th>
                     <th>11%</th>
                     <th>Lucro</th>
+                    <th>🗑️</th>
                 </tr>
             </thead>
             <tbody id="tabelaLog">
@@ -77,6 +88,7 @@
     <script>
         let somaOriginal = 0;
         let somaFinal = 0;
+        let somaLucro = 0;
         let contagem = 0;
 
         // Carrega os dados salvos assim que a página abre
@@ -86,11 +98,13 @@
                 let dados = JSON.parse(dadosSalvos);
                 somaOriginal = dados.somaOriginal;
                 somaFinal = dados.somaFinal;
+                somaLucro = dados.somaLucro || 0; // || 0 pra evitar erro se carregar um save antigo
                 contagem = dados.contagem;
                 
                 document.getElementById("totQtd").innerText = contagem;
                 document.getElementById("totOriginal").innerText = somaOriginal;
                 document.getElementById("totFinal").innerText = somaFinal;
+                document.getElementById("totLucro").innerText = somaLucro;
                 document.getElementById("tabelaLog").innerHTML = dados.tabelaHTML;
             }
         };
@@ -100,6 +114,7 @@
             let dados = {
                 somaOriginal: somaOriginal,
                 somaFinal: somaFinal,
+                somaLucro: somaLucro,
                 contagem: contagem,
                 tabelaHTML: document.getElementById("tabelaLog").innerHTML
             };
@@ -125,10 +140,12 @@
             contagem++;
             somaOriginal += valor;
             somaFinal += valorDescontado;
+            somaLucro += lucro;
 
             document.getElementById("totQtd").innerText = contagem;
             document.getElementById("totOriginal").innerText = somaOriginal;
             document.getElementById("totFinal").innerText = somaFinal;
+            document.getElementById("totLucro").innerText = somaLucro;
 
             let agora = new Date();
             let horaFormatada = agora.getHours().toString().padStart(2, '0') + ":" + 
@@ -144,12 +161,35 @@
             novaLinha.insertCell(3).innerText = "R$ " + valorDescontado;
             novaLinha.insertCell(4).innerText = "R$ " + valor11;
             novaLinha.insertCell(5).innerText = "R$ " + lucro;
+            
+            // Cria a célula do botão X com os valores embutidos pra poder subtrair depois
+            novaLinha.insertCell(6).innerHTML = `<button class="btn-excluir" onclick="deletarLinha(this, ${valor}, ${valorDescontado}, ${lucro})">❌</button>`;
 
-            // Salva tudo logo após adicionar a linha
             salvarNoNavegador();
 
             document.getElementById("valorInput").value = "";
             document.getElementById("valorInput").focus();
+        }
+
+        function deletarLinha(botao, valorOriginalLinha, valorFinalLinha, lucroLinha) {
+            // Subtrai os valores da linha apagada dos totais globais
+            contagem--;
+            somaOriginal -= valorOriginalLinha;
+            somaFinal -= valorFinalLinha;
+            somaLucro -= lucroLinha;
+
+            // Atualiza os textos lá em cima
+            document.getElementById("totQtd").innerText = contagem;
+            document.getElementById("totOriginal").innerText = somaOriginal;
+            document.getElementById("totFinal").innerText = somaFinal;
+            document.getElementById("totLucro").innerText = somaLucro;
+
+            // Apaga a linha inteira da tabela
+            let linha = botao.parentNode.parentNode;
+            linha.parentNode.removeChild(linha);
+
+            // Salva o novo estado sem a linha
+            salvarNoNavegador();
         }
 
         function baixarPlanilha() {
@@ -165,7 +205,8 @@
                 let linha = [];
                 let colunas = linhas[i].querySelectorAll("td, th");
                 
-                for (let j = 0; j < colunas.length; j++) {
+                // Vai só até o length - 1 para ignorar a coluna do botão X
+                for (let j = 0; j < colunas.length - 1; j++) {
                     let texto = colunas[j].innerText.replace("R$ ", "");
                     linha.push(texto);
                 }
@@ -184,14 +225,15 @@
             if(confirm("Tem certeza que deseja apagar todo o histórico?")) {
                 somaOriginal = 0;
                 somaFinal = 0;
+                somaLucro = 0;
                 contagem = 0;
 
                 document.getElementById("totQtd").innerText = "0";
                 document.getElementById("totOriginal").innerText = "0";
                 document.getElementById("totFinal").innerText = "0";
+                document.getElementById("totLucro").innerText = "0";
                 document.getElementById("tabelaLog").innerHTML = "";
 
-                // Apaga a memória do navegador também
                 localStorage.removeItem("historicoCalculadora");
             }
         }
