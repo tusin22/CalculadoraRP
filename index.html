@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora de Descontos</title>
-
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f9; }
         .app-wrapper { max-width: 600px; } /* Aumentei um pouquinho pra caber o X */
@@ -35,7 +34,6 @@
         .btn-excluir:hover { transform: scale(1.2); }
     </style>
 </head>
-
 <body>
 
     <div class="app-wrapper">
@@ -122,33 +120,22 @@
             };
             localStorage.setItem("historicoCalculadora", JSON.stringify(dados));
         }
-        }
-
-
 
         function calcular() {
+            let valorInput = document.getElementById("valorInput").value;
+            let porcentagem = document.getElementById("porcentagemInput").value;
 
-            let valor = parseFloat(document.getElementById("valorInput").value);
-
-            if (isNaN(valor) || valor <= 0) {
-
+            if (valorInput === "" || valorInput <= 0) {
                 alert("Insira um valor válido maior que zero.");
-
                 return;
-
             }
 
-            let percentual = parseInt(document.getElementById("porcentagemInput").value);
-
-            let valorDescontado = Math.ceil(valor - (valor * percentual / 100));
-
+            let valor = Math.ceil(parseFloat(valorInput));
+            let percentual = parseFloat(porcentagem);
+            
+            let valorDescontado = Math.ceil(valor - (valor * (percentual / 100)));
             let valor11 = Math.ceil(valor - (valor * 0.11));
-
-            let lucro = Math.ceil(valor11 - valorDescontado);
-
-            let horaFormatada = new Date().toLocaleTimeString();
-
-            let novaLinha = document.getElementById("tabelaLog").insertRow();
+            let lucro = valor11 - valorDescontado;
 
             contagem++;
             somaOriginal += valor;
@@ -159,6 +146,14 @@
             document.getElementById("totOriginal").innerText = somaOriginal;
             document.getElementById("totFinal").innerText = somaFinal;
             document.getElementById("totLucro").innerText = somaLucro;
+
+            let agora = new Date();
+            let horaFormatada = agora.getHours().toString().padStart(2, '0') + ":" + 
+                                agora.getMinutes().toString().padStart(2, '0') + ":" + 
+                                agora.getSeconds().toString().padStart(2, '0');
+
+            let tabela = document.getElementById("tabelaLog");
+            let novaLinha = tabela.insertRow(0); 
 
             novaLinha.insertCell(0).innerText = horaFormatada;
             novaLinha.insertCell(1).innerText = "R$ " + valor;
