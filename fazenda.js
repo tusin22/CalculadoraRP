@@ -77,6 +77,14 @@ function getLocalDateString(dateObj) {
     return `${y}-${m}-${d}`;
 }
 
+function isReadyOnDate(timestamp, selectedDateStr) {
+    const entryDate = new Date(timestamp);
+    // Add 10 hours (10 * 60 * 60 * 1000 ms)
+    const readyDate = new Date(entryDate.getTime() + 10 * 60 * 60 * 1000);
+    const readyDateStr = getLocalDateString(readyDate);
+    return readyDateStr === selectedDateStr;
+}
+
 function render() {
     const dateInput = document.getElementById("filtroData");
     const selectedDateStr = dateInput.value;
@@ -114,6 +122,64 @@ function render() {
     const resumoContent = document.getElementById("resumoDiaContent");
     resumoContent.innerHTML = "";
 
+    // 1. Calcular e Exibir "Queijo Pronto para Colher" (Regra 10h)
+    const totaisProntos = {};
+    let temQueijoPronto = false;
+
+    historico.forEach(item => {
+        if (item.timestamp && isReadyOnDate(item.timestamp, selectedDateStr)) {
+            if (!totaisProntos[item.nome]) {
+                totaisProntos[item.nome] = 0;
+            }
+            totaisProntos[item.nome] += item.queijo;
+            temQueijoPronto = true;
+        }
+    });
+
+    let displayDiv = document.getElementById("displayQueijoPronto");
+    if (!displayDiv) {
+        const container = document.getElementById("resumoDiaContainer");
+        displayDiv = document.createElement("div");
+        displayDiv.id = "displayQueijoPronto";
+        displayDiv.style.textAlign = "center";
+        displayDiv.style.marginBottom = "15px";
+        displayDiv.style.padding = "10px";
+        displayDiv.style.backgroundColor = "rgba(255, 193, 7, 0.1)";
+        displayDiv.style.borderRadius = "8px";
+        displayDiv.style.border = "1px solid #ffc107";
+
+        // Insert before content but after header
+        container.insertBefore(displayDiv, resumoContent);
+    }
+
+    if (!temQueijoPronto) {
+         displayDiv.innerHTML = `
+            <div style="color: #ccc; font-size: 14px; margin-bottom: 5px;">Queijo Pronto para Colher</div>
+            <div style="color: #ffc107; font-size: 24px; font-weight: bold; opacity: 0.7;">
+                0
+            </div>
+        `;
+    } else {
+        let htmlContent = `<div style="color: #ccc; font-size: 14px; margin-bottom: 10px;">Queijo Pronto para Colher</div>`;
+        htmlContent += `<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px;">`;
+
+        Object.keys(totaisProntos).sort().forEach(nome => {
+            const qtd = totaisProntos[nome];
+            htmlContent += `
+                <div style="text-align: center;">
+                    <div style="color: #fff; font-size: 14px; margin-bottom: 2px;">${nome}</div>
+                    <div style="color: #ffc107; font-size: 24px; font-weight: bold; text-shadow: 0 0 10px rgba(255, 193, 7, 0.3);">
+                        🧀 ${qtd}
+                    </div>
+                </div>
+            `;
+        });
+
+        htmlContent += `</div>`;
+        displayDiv.innerHTML = htmlContent;
+    }
+
+    // 2. Calcular Resumo de Lançamentos (Input do Dia)
     const totais = {};
 
     historico.forEach(item => {
@@ -146,24 +212,19 @@ function render() {
 }
 
 function renderChart(selectedDateStr) {
-    // Calculate yesterday
+    // Calculate selected date object for formatting
     const [y, m, d] = selectedDateStr.split('-').map(Number);
     const selDate = new Date(y, m - 1, d);
-    const yesterday = new Date(selDate);
-    yesterday.setDate(selDate.getDate() - 1);
-    const yesterdayStr = getLocalDateString(yesterday);
+    const selectedDateFormatted = selDate.toLocaleDateString('pt-BR');
 
-    // Aggregate data for yesterday
-    const totalsYesterday = {};
+    // Aggregate data for "Queijo Pronto" (10h Rule) on Selected Date
+    const totalsReady = {};
     historico.forEach(item => {
-        const itemDate = new Date(item.timestamp);
-        const itemDateStr = getLocalDateString(itemDate);
-
-        if (itemDateStr === yesterdayStr) {
-            if (!totalsYesterday[item.nome]) {
-                totalsYesterday[item.nome] = 0;
+        if (item.timestamp && isReadyOnDate(item.timestamp, selectedDateStr)) {
+            if (!totalsReady[item.nome]) {
+                totalsReady[item.nome] = 0;
             }
-            totalsYesterday[item.nome] += item.queijo;
+            totalsReady[item.nome] += item.queijo;
         }
     });
 
@@ -171,11 +232,11 @@ function renderChart(selectedDateStr) {
     const finalLabels = [...knownNames];
 
     // Add dynamically found names if any
-    Object.keys(totalsYesterday).forEach(name => {
+    Object.keys(totalsReady).forEach(name => {
         if (!finalLabels.includes(name)) finalLabels.push(name);
     });
 
-    const finalData = finalLabels.map(name => totalsYesterday[name] || 0);
+    const finalData = finalLabels.map(name => totalsReady[name] || 0);
 
     const ctx = document.getElementById('graficoColeta').getContext('2d');
 
@@ -183,14 +244,12 @@ function renderChart(selectedDateStr) {
         chartInstance.destroy();
     }
 
-    const yesterdayFormatted = yesterday.toLocaleDateString('pt-BR');
-
     chartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: finalLabels,
             datasets: [{
-                label: `Queijos a Colher (${yesterdayFormatted})`,
+                label: `Queijos Prontos (${selectedDateFormatted})`,
                 data: finalData,
                 backgroundColor: 'rgba(255, 193, 7, 0.6)',
                 borderColor: 'rgba(255, 193, 7, 1)',
