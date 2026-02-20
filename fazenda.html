@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fazenda de Leite/Queijo</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="fazenda.js" defer></script>
+</head>
+<body class="theme-fazenda">
+
+    <div class="app-wrapper">
+        <div class="container">
+            <h2>Fazenda de Leite/Queijo</h2>
+
+            <label for="nomeInput">Nome:</label>
+            <select id="nomeInput">
+                <option value="Jogador 1">Jogador 1</option>
+                <option value="Jogador 2">Jogador 2</option>
+                <option value="Jogador 3">Jogador 3</option>
+            </select>
+
+            <label for="leiteInput">Caixas de Leite:</label>
+            <input type="number" id="leiteInput" placeholder="Ex: 30" min="1">
+
+            <button class="btn-registrar" id="btnRegistrar">Registrar</button>
+        </div>
+
+        <div class="resumo">
+            <div id="resumoDiaContainer">
+                <h3 style="margin-top: 0; color: #ffc107; font-size: 16px; margin-bottom: 10px;">Resumo do Dia (Hoje)</h3>
+                <div id="resumoDiaContent">
+                    <!-- Dynamic Content -->
+                </div>
+            </div>
+
+            <div class="botoes-acao">
+                <button class="btn-baixar" id="btnBaixar">Baixar (CSV)</button>
+                <button class="btn-limpar" id="btnLimpar">Limpar Histórico</button>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Data/Hora</th>
+                    <th>Nome</th>
+                    <th>Leite</th>
+                    <th>Queijo</th>
+                    <th>🗑️</th>
+                </tr>
+            </thead>
+            <tbody id="tabelaLog">
+            </tbody>
+        </table>
+
+        <div style="text-align: center; margin-top: 20px;">
+             <a href="index.html" style="color: #666; text-decoration: none; font-size: 14px;">⬅ Voltar ao Painel</a>
+        </div>
+    </div>
+
+</body>
+</html>
