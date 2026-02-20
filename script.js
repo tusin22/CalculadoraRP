@@ -1,14 +1,15 @@
 const BIN_ID = "69987a5943b1c97be98e9cc8";
-const API_KEY = "$2a$10$4toTqmFhiXGWPVvVJecY0etjHwM6OAmuGbFBiqbZ.Do5IEIvBVqZ2";
+// IMPORTANTE: Cole a sua MASTER KEY aqui dentro das aspas, não a access key
+const API_KEY = "$2a$10$9cyIi/5q86ZybmWCrVgC4OgaPyvT9Rq4r/OQrR74.rTE5LmaTNo0u"; 
 let historico = [];
 
 // Carrega os dados salvos assim que a página abre
 document.addEventListener("DOMContentLoaded", () => {
     if (BIN_ID && API_KEY) {
-        fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+        fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
             method: 'GET',
             headers: {
-                'X-Access-Key': API_KEY
+                'X-Master-Key': API_KEY // Alterado para Master Key
             }
         })
         .then(response => {
@@ -19,13 +20,16 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .then(data => {
             if (data.record) {
-                historico = Array.isArray(data.record) ? data.record : (data.record.historico || []);
+                historico = Array.isArray(data.record) ? data.record : [];
             }
             render();
         })
-        .catch(error => console.error("Erro ao carregar histórico:", error));
+        .catch(error => {
+            console.error("Erro ao carregar histórico:", error);
+            render(); // Garante que a tela carregue mesmo se der erro
+        });
     } else {
-        console.warn("BIN_ID ou API_KEY não configurados. Histórico não carregado.");
+        console.warn("BIN_ID ou API_KEY não configurados.");
         render();
     }
 
@@ -34,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("btnBaixar").addEventListener("click", baixarPlanilha);
     document.getElementById("btnLimpar").addEventListener("click", limparHistorico);
 
-    // Event delegation for delete buttons
+    // Event delegation para os botões de excluir
     document.getElementById("tabelaLog").addEventListener("click", (e) => {
         if (e.target.classList.contains("btn-excluir")) {
             const index = e.target.getAttribute("data-index");
@@ -42,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Enter key support for input
+    // Suporte para a tecla Enter no input
     document.getElementById("valorInput").addEventListener("keypress", (e) => {
         if (e.key === "Enter") {
             calcular();
@@ -60,7 +64,6 @@ function render() {
 
     const fragment = document.createDocumentFragment();
 
-    // Iterate in reverse to show newest first (LIFO visual)
     for (let i = historico.length - 1; i >= 0; i--) {
         const item = historico[i];
         somaOriginal += item.original;
@@ -92,7 +95,6 @@ function render() {
 
 function saveToBin() {
     if (!BIN_ID || !API_KEY) {
-        console.warn("BIN_ID ou API_KEY não configurados.");
         return;
     }
 
@@ -100,7 +102,7 @@ function saveToBin() {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
-            'X-Access-Key': API_KEY
+            'X-Master-Key': API_KEY // Alterado para Master Key
         },
         body: JSON.stringify(historico)
     })
@@ -110,7 +112,7 @@ function saveToBin() {
         }
         return response.json();
     })
-    .then(data => console.log("Histórico salvo com sucesso:", data))
+    .then(data => console.log("Histórico salvo com sucesso!"))
     .catch(error => console.error("Erro ao salvar histórico:", error));
 }
 
@@ -130,7 +132,6 @@ function calcular() {
         return;
     }
 
-    // Mantendo a lógica de arredondamento original
     const valor = Math.ceil(parseFloat(valorStr));
     const percentual = parseFloat(porcentagemStr);
 
@@ -171,26 +172,15 @@ function baixarPlanilha() {
     }
 
     let csvContent = "Hora;Orig.;%;Final;11%;Lucro\n";
-
-    // Iterating to match the visual order? Or array order?
-    // Visual order is newest first. CSV usually follows visual or chronological.
-    // I'll export chronological (array order) or reverse?
-    // Original code exported the table rows, which were newest first.
-    // So I should export reversed array to match original behavior.
-
     const historicoReverso = [...historico].reverse();
 
     historicoReverso.forEach(item => {
         const row = [
             item.hora,
-            item.original, // Removing "R$ " as in original code? Original code stripped "R$ ". Here I have numbers.
+            item.original,
             item.percentual + "%",
             item.final,
-            item.valor11, // Original table didn't have this in CSV?
-            // Original code:
-            // for (let j = 0; j < colunas.length - 1; j++) ...
-            // Columns: Hora, Orig, %, Final, 11%, Lucro, X
-            // So it included 11% column.
+            item.valor11,
             item.lucro
         ];
         csvContent += row.join(";") + "\n";
