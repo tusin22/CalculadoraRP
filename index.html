@@ -8,20 +8,38 @@
 </head>
 <body>
 
-    <div class="app-wrapper">
-        <div class="container">
-            <h2>Painel de Controle</h2>
-            
-            <div class="dashboard-buttons">
-                <a href="lavanderia.html" class="btn-dashboard">
-                    👕 Controle Lavanderia
-                </a>
-                <a href="fazenda.html" class="btn-dashboard">
-                    🐄 Fazenda de Leite/Queijo
-                </a>
-            </div>
+    <div class="app-wrapper dashboard-wrapper">
+        <h2 class="dashboard-title">Painel de Controle</h2>
 
+        <div class="dashboard-grid">
+            <a href="lavanderia.html" class="dashboard-card card-lavanderia">
+                <div class="card-icon">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="2" width="18" height="20" rx="2"></rect>
+                        <circle cx="12" cy="13" r="5"></circle>
+                        <path d="M12 18v-5"></path>
+                        <path d="M7 6h.01"></path>
+                        <path d="M10 6h.01"></path>
+                    </svg>
+                </div>
+                <span class="card-title">Controle Lavanderia</span>
+            </a>
+            
+            <a href="fazenda.html" class="dashboard-card card-fazenda">
+                <div class="card-icon">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2l9 4-9 4-9-4 9-4z"></path>
+                        <path d="M12 10v12"></path>
+                        <path d="M21 6v10l-9 6-9-6V6"></path>
+                        <circle cx="16" cy="13" r="1.5"></circle>
+                        <circle cx="8" cy="16" r="1"></circle>
+                        <circle cx="12" cy="16" r="1"></circle>
+                    </svg>
+                </div>
+                <span class="card-title">Fazenda de Leite/Queijo</span>
+            </a>
         </div>
+
     </div>
 
 </body>
