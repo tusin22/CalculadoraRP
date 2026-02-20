@@ -1,15 +1,16 @@
 const BIN_ID = "69987a5943b1c97be98e9cc8";
-// IMPORTANTE: Cole a sua MASTER KEY aqui dentro das aspas, não a access key
 const API_KEY = "$2a$10$9cyIi/5q86ZybmWCrVgC4OgaPyvT9Rq4r/OQrR74.rTE5LmaTNo0u"; 
 let historico = [];
 
 // Carrega os dados salvos assim que a página abre
 document.addEventListener("DOMContentLoaded", () => {
     if (BIN_ID && API_KEY) {
-        fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+        // O nocache=Date.now() força o navegador a buscar o dado real, ignorando lixo salvo
+        fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest?nocache=${Date.now()}`, {
             method: 'GET',
+            cache: 'no-store',
             headers: {
-                'X-Master-Key': API_KEY // Alterado para Master Key
+                'X-Master-Key': API_KEY
             }
         })
         .then(response => {
@@ -26,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .catch(error => {
             console.error("Erro ao carregar histórico:", error);
-            render(); // Garante que a tela carregue mesmo se der erro
+            render(); 
         });
     } else {
         console.warn("BIN_ID ou API_KEY não configurados.");
@@ -46,7 +47,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Suporte para a tecla Enter no input
     document.getElementById("valorInput").addEventListener("keypress", (e) => {
         if (e.key === "Enter") {
             calcular();
@@ -102,7 +102,8 @@ function saveToBin() {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
-            'X-Master-Key': API_KEY // Alterado para Master Key
+            'X-Master-Key': API_KEY,
+            'X-Bin-Versioning': 'false' // Trava para não gastar o limite de uso criando cópias
         },
         body: JSON.stringify(historico)
     })
