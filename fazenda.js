@@ -3,6 +3,7 @@ const API_KEY = "$2a$10$9cyIi/5q86ZybmWCrVgC4OgaPyvT9Rq4r/OQrR74.rTE5LmaTNo0u";
 const SENHA_ACESSO = "4499";
 
 let historico = [];
+let chartInstance = null;
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -12,6 +13,31 @@ document.addEventListener("DOMContentLoaded", () => {
         document.body.innerHTML = "<h2 style='color:white; text-align:center; margin-top:20%; font-family:sans-serif;'>Acesso Negado ❌</h2><div style='text-align:center; margin-top:20px;'><a href='index.html' style='color:#ccc; text-decoration:underline;'>Voltar ao Painel</a></div>";
         return;
     }
+
+    // Set Date Filter to Today
+    const dateInput = document.getElementById("filtroData");
+    const today = new Date();
+    dateInput.value = getLocalDateString(today);
+
+    // Event Listeners
+    dateInput.addEventListener("change", render);
+    document.getElementById("btnRegistrar").addEventListener("click", registrar);
+    document.getElementById("btnBaixar").addEventListener("click", baixarPlanilha);
+    document.getElementById("btnLimpar").addEventListener("click", limparHistorico);
+
+    document.getElementById("tabelaLog").addEventListener("click", (e) => {
+        if (e.target.classList.contains("btn-excluir")) {
+            const index = e.target.getAttribute("data-index");
+            deletarLinha(parseInt(index));
+        }
+    });
+
+    // Enter key support
+    document.getElementById("leiteInput").addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+            registrar();
+        }
+    });
 
     if (BIN_ID && API_KEY) {
         fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest?nocache=${Date.now()}`, {
@@ -42,64 +68,59 @@ document.addEventListener("DOMContentLoaded", () => {
         console.warn("BIN_ID ou API_KEY não configurados.");
         render();
     }
-
-    // Event Listeners
-    document.getElementById("btnRegistrar").addEventListener("click", registrar);
-    document.getElementById("btnBaixar").addEventListener("click", baixarPlanilha);
-    document.getElementById("btnLimpar").addEventListener("click", limparHistorico);
-
-    document.getElementById("tabelaLog").addEventListener("click", (e) => {
-        if (e.target.classList.contains("btn-excluir")) {
-            const index = e.target.getAttribute("data-index");
-            deletarLinha(parseInt(index));
-        }
-    });
-
-    // Enter key support
-    document.getElementById("leiteInput").addEventListener("keypress", (e) => {
-        if (e.key === "Enter") {
-            registrar();
-        }
-    });
 });
 
+function getLocalDateString(dateObj) {
+    const y = dateObj.getFullYear();
+    const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const d = String(dateObj.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
 function render() {
+    const dateInput = document.getElementById("filtroData");
+    const selectedDateStr = dateInput.value;
+
     const tabelaLog = document.getElementById("tabelaLog");
     tabelaLog.innerHTML = "";
 
     const fragment = document.createDocumentFragment();
 
-    // Renderiza Tabela (Do mais novo para o mais antigo)
+    // Renderiza Tabela (Do mais novo para o mais antigo, filtrado)
     for (let i = historico.length - 1; i >= 0; i--) {
         const item = historico[i];
-        const row = document.createElement("tr");
+        const itemDate = new Date(item.timestamp);
+        const itemDateStr = getLocalDateString(itemDate);
 
-        const dataObj = new Date(item.timestamp);
-        const dataFormatada = dataObj.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+        if (itemDateStr === selectedDateStr) {
+            const row = document.createElement("tr");
+            const dataFormatada = itemDate.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 
-        row.innerHTML = `
-            <td>${dataFormatada}</td>
-            <td>${item.nome}</td>
-            <td>${item.leite}</td>
-            <td>${item.queijo}</td>
-            <td><button class="btn-excluir" data-index="${i}" aria-label="Excluir linha">❌</button></td>
-        `;
+            row.innerHTML = `
+                <td>${dataFormatada}</td>
+                <td>${item.nome}</td>
+                <td>${item.leite}</td>
+                <td>${item.queijo}</td>
+                <td><button class="btn-excluir" data-index="${i}" aria-label="Excluir linha">❌</button></td>
+            `;
 
-        fragment.appendChild(row);
+            fragment.appendChild(row);
+        }
     }
 
     tabelaLog.appendChild(fragment);
 
-    // Renderiza Resumo do Dia (Agrupado por Pessoa)
+    // Renderiza Resumo do Dia (Agrupado por Pessoa, filtrado)
     const resumoContent = document.getElementById("resumoDiaContent");
     resumoContent.innerHTML = "";
 
-    const hoje = new Date().toLocaleDateString('pt-BR');
     const totais = {};
 
     historico.forEach(item => {
         const itemDate = new Date(item.timestamp);
-        if (itemDate.toLocaleDateString('pt-BR') === hoje) {
+        const itemDateStr = getLocalDateString(itemDate);
+
+        if (itemDateStr === selectedDateStr) {
             if (!totais[item.nome]) {
                 totais[item.nome] = { leite: 0, queijo: 0 };
             }
@@ -109,7 +130,7 @@ function render() {
     });
 
     if (Object.keys(totais).length === 0) {
-        resumoContent.innerHTML = "<div class='resumo-item' style='justify-content:center; color:#666;'>Nenhum registro hoje.</div>";
+        resumoContent.innerHTML = "<div class='resumo-item' style='justify-content:center; color:#666;'>Nenhum registro nesta data.</div>";
     } else {
         Object.keys(totais).sort().forEach(nome => {
             const dados = totais[nome];
@@ -119,6 +140,94 @@ function render() {
             resumoContent.appendChild(div);
         });
     }
+
+    // Renderiza Gráfico
+    renderChart(selectedDateStr);
+}
+
+function renderChart(selectedDateStr) {
+    // Calculate yesterday
+    const [y, m, d] = selectedDateStr.split('-').map(Number);
+    const selDate = new Date(y, m - 1, d);
+    const yesterday = new Date(selDate);
+    yesterday.setDate(selDate.getDate() - 1);
+    const yesterdayStr = getLocalDateString(yesterday);
+
+    // Aggregate data for yesterday
+    const totalsYesterday = {};
+    historico.forEach(item => {
+        const itemDate = new Date(item.timestamp);
+        const itemDateStr = getLocalDateString(itemDate);
+
+        if (itemDateStr === yesterdayStr) {
+            if (!totalsYesterday[item.nome]) {
+                totalsYesterday[item.nome] = 0;
+            }
+            totalsYesterday[item.nome] += item.queijo;
+        }
+    });
+
+    const knownNames = ["Tusin", "Gabo", "RZ"];
+    const finalLabels = [...knownNames];
+
+    // Add dynamically found names if any
+    Object.keys(totalsYesterday).forEach(name => {
+        if (!finalLabels.includes(name)) finalLabels.push(name);
+    });
+
+    const finalData = finalLabels.map(name => totalsYesterday[name] || 0);
+
+    const ctx = document.getElementById('graficoColeta').getContext('2d');
+
+    if (chartInstance) {
+        chartInstance.destroy();
+    }
+
+    const yesterdayFormatted = yesterday.toLocaleDateString('pt-BR');
+
+    chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: finalLabels,
+            datasets: [{
+                label: `Queijos a Colher (${yesterdayFormatted})`,
+                data: finalData,
+                backgroundColor: 'rgba(255, 193, 7, 0.6)',
+                borderColor: 'rgba(255, 193, 7, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1,
+                        color: '#fff'
+                    },
+                    grid: {
+                        color: '#444'
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: '#fff'
+                    },
+                    grid: {
+                        color: '#444'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#fff'
+                    }
+                }
+            }
+        }
+    });
 }
 
 function saveToBin() {
