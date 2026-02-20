@@ -1,5 +1,5 @@
-let BIN_ID = "69987a5943b1c97be98e9cc8";
-let API_KEY = "$2a$10$4toTqmFhiXGWPVvVJecY0etjHwM6OAmuGbFBiqbZ.Do5IEIvBVqZ2";
+const BIN_ID = "69987a5943b1c97be98e9cc8";
+const API_KEY = "$2a$10$4toTqmFhiXGWPVvVJecY0etjHwM6OAmuGbFBiqbZ.Do5IEIvBVqZ2";
 let historico = [];
 
 // Carrega os dados salvos assim que a página abre
@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
         fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
             method: 'GET',
             headers: {
-                'X-Master-Key': API_KEY
+                'X-Access-Key': API_KEY
             }
         })
         .then(response => {
@@ -100,7 +100,7 @@ function saveToBin() {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
-            'X-Master-Key': API_KEY
+            'X-Access-Key': API_KEY
         },
         body: JSON.stringify(historico)
     })
