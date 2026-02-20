@@ -1,6 +1,6 @@
 const BIN_ID = "";
 const API_KEY = "";
-const SENHA_ACESSO = "1234";
+const SENHA_ACESSO = "4499";
 
 let historico = [];
 
