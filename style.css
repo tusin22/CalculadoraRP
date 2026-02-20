@@ -1,27 +1,201 @@
-body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f9; }
-.app-wrapper { max-width: 600px; } /* Aumentei um pouquinho pra caber o X */
-.container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 15px; }
-input, select, button { padding: 10px; margin: 5px 0; width: 100%; box-sizing: border-box; }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
 
-button.btn-calcular { background-color: #28a745; color: white; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; }
-button.btn-calcular:hover { background-color: #218838; }
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 20px;
+    background-color: #121212;
+    color: #e0e0e0;
+}
 
-.botoes-acao { margin-top: 10px; display: flex; gap: 10px; }
-.btn-baixar { background-color: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; padding: 10px; flex: 1; }
-.btn-baixar:hover { background-color: #0056b3; }
-.btn-limpar { background-color: #dc3545; color: white; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; padding: 10px; flex: 1; }
-.btn-limpar:hover { background-color: #c82333; }
+.app-wrapper {
+    max-width: 600px;
+    margin: 0 auto;
+}
 
-table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; font-size: 13px; }
-th, td { border: 1px solid #ddd; padding: 6px; text-align: center; }
-th { background-color: #343a40; color: white; }
+.container {
+    background: #1e1e1e;
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    margin-bottom: 20px;
+}
 
-.resumo { background: #e9ecef; padding: 15px; border-radius: 8px; font-weight: bold; font-size: 14px; line-height: 1.5; }
+h2 {
+    margin-top: 0;
+    color: #e0e0e0;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 20px;
+}
 
-table th:nth-child(4), table td:nth-child(4) { background-color: #fff0c2; }
-table thead th:nth-child(4) { color: #212529; }
-table tbody td:nth-child(4) { font-weight: bold; }
+label {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    color: #aaa;
+    font-size: 14px;
+}
 
-/* Estilo pro botão de apagar a linha */
-.btn-excluir { background: none; border: none; color: red; cursor: pointer; font-size: 16px; padding: 0; width: auto; margin: 0; }
-.btn-excluir:hover { transform: scale(1.2); }
+input, select, button {
+    padding: 12px;
+    margin: 5px 0;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    border: 1px solid #333;
+}
+
+input, select {
+    background-color: #2c2c2c;
+    color: #fff;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #00ff7f;
+    box-shadow: 0 0 0 3px rgba(0, 255, 127, 0.1);
+}
+
+button {
+    margin-top: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Calculate Button - Neon Green */
+button.btn-calcular {
+    background-color: #00ff7f;
+    color: #121212;
+    border: none;
+    margin-top: 20px;
+}
+
+button.btn-calcular:hover {
+    background-color: #00e673;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 255, 127, 0.4);
+}
+
+.resumo {
+    background: #1e1e1e;
+    padding: 20px;
+    border-radius: 16px;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 1.8;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    color: #ccc;
+}
+
+.resumo span {
+    color: #fff;
+    font-weight: 600;
+}
+
+.botoes-acao {
+    margin-top: 15px;
+    display: flex;
+    gap: 15px;
+}
+
+/* Download Button - Blue */
+.btn-baixar {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    flex: 1;
+}
+
+.btn-baixar:hover {
+    background-color: #0069d9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+}
+
+/* Clear Button - Red */
+.btn-limpar {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    flex: 1;
+}
+
+.btn-limpar:hover {
+    background-color: #c82333;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+}
+
+/* Table Styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 25px;
+    background: #1e1e1e;
+    font-size: 14px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+th, td {
+    border: none;
+    padding: 12px 15px;
+    text-align: center;
+    border-bottom: 1px solid #2c2c2c;
+}
+
+th {
+    background-color: #252525;
+    color: #aaa;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 1px;
+}
+
+tr:nth-child(even) {
+    background-color: #262626;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+/* Highlight Column (Final Price) */
+table th:nth-child(4), table td:nth-child(4) {
+    background-color: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+}
+
+table thead th:nth-child(4) {
+    color: #ffc107;
+}
+
+table tbody td:nth-child(4) {
+    font-weight: bold;
+}
+
+/* Delete Button */
+.btn-excluir {
+    background: none;
+    border: none;
+    color: #ff6b6b;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 5px;
+    width: auto;
+    margin: 0;
+    opacity: 0.7;
+    transition: all 0.2s;
+}
+
+.btn-excluir:hover {
+    transform: scale(1.2);
+    opacity: 1;
+    color: #ff4c4c;
+}
