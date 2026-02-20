@@ -1,5 +1,5 @@
-let BIN_ID = "";
-let API_KEY = "";
+let BIN_ID = "69987a5943b1c97be98e9cc8";
+let API_KEY = "$2a$10$4toTqmFhiXGWPVvVJecY0etjHwM6OAmuGbFBiqbZ.Do5IEIvBVqZ2";
 let historico = [];
 
 // Carrega os dados salvos assim que a página abre
