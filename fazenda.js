@@ -2,7 +2,6 @@ const BIN_ID = "6998a16dd0ea881f40ca5bf0";
 const API_KEY = "$2a$10$9cyIi/5q86ZybmWCrVgC4OgaPyvT9Rq4r/OQrR74.rTE5LmaTNo0u";
 
 let historico = [];
-let chartInstance = null;
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -227,86 +226,6 @@ function render() {
         });
     }
 
-    // Renderiza Gráfico
-    renderChart(selectedDateStr);
-}
-
-function renderChart(selectedDateStr) {
-    // Calculate selected date object for formatting
-    const [y, m, d] = selectedDateStr.split('-').map(Number);
-    const selDate = new Date(y, m - 1, d);
-    const selectedDateFormatted = selDate.toLocaleDateString('pt-BR');
-
-    // Aggregate data for "Queijo Pronto" (10h Rule) on Selected Date
-    const totalsReady = {};
-    historico.forEach(item => {
-        if (item.timestamp && isReadyOnDate(item.timestamp, selectedDateStr)) {
-            if (!totalsReady[item.nome]) {
-                totalsReady[item.nome] = 0;
-            }
-            totalsReady[item.nome] += item.queijo;
-        }
-    });
-
-    const knownNames = ["Tusin", "Gabo", "RZ"];
-    const finalLabels = [...knownNames];
-
-    // Add dynamically found names if any
-    Object.keys(totalsReady).forEach(name => {
-        if (!finalLabels.includes(name)) finalLabels.push(name);
-    });
-
-    const finalData = finalLabels.map(name => totalsReady[name] || 0);
-
-    const ctx = document.getElementById('graficoColeta').getContext('2d');
-
-    if (chartInstance) {
-        chartInstance.destroy();
-    }
-
-    chartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: finalLabels,
-            datasets: [{
-                label: `Queijos Prontos (${selectedDateFormatted})`,
-                data: finalData,
-                backgroundColor: 'rgba(255, 193, 7, 0.6)',
-                borderColor: 'rgba(255, 193, 7, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1,
-                        color: '#fff'
-                    },
-                    grid: {
-                        color: '#444'
-                    }
-                },
-                x: {
-                    ticks: {
-                        color: '#fff'
-                    },
-                    grid: {
-                        color: '#444'
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    labels: {
-                        color: '#fff'
-                    }
-                }
-            }
-        }
-    });
 }
 
 function saveToBin() {
