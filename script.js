@@ -1,9 +1,18 @@
 const BIN_ID = "69987a5943b1c97be98e9cc8";
 const API_KEY = "$2a$10$9cyIi/5q86ZybmWCrVgC4OgaPyvT9Rq4r/OQrR74.rTE5LmaTNo0u"; 
+const SENHA_ACESSO = "4499"; 
 let historico = [];
 
 // Carrega os dados salvos assim que a página abre
 document.addEventListener("DOMContentLoaded", () => {
+    
+    // TRAVA DE SEGURANÇA
+    const tentativa = prompt("Digite a senha para acessar a calculadora do RP:");
+    if (tentativa !== SENHA_ACESSO) {
+        document.body.innerHTML = "<h2 style='color:white; text-align:center; margin-top:20%; font-family:sans-serif;'>Acesso Negado ❌</h2>";
+        return; 
+    }
+
     if (BIN_ID && API_KEY) {
         fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest?nocache=${Date.now()}`, {
             method: 'GET',
@@ -21,7 +30,6 @@ document.addEventListener("DOMContentLoaded", () => {
         .then(data => {
             if (data.record) {
                 let puxado = Array.isArray(data.record) ? data.record : [];
-                // IGNORA O ITEM FALSO NA HORA DE LER A TABELA
                 historico = puxado.filter(item => !item.vazio);
             }
             render();
@@ -40,7 +48,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("btnBaixar").addEventListener("click", baixarPlanilha);
     document.getElementById("btnLimpar").addEventListener("click", limparHistorico);
 
-    // Event delegation para os botões de excluir
     document.getElementById("tabelaLog").addEventListener("click", (e) => {
         if (e.target.classList.contains("btn-excluir")) {
             const index = e.target.getAttribute("data-index");
@@ -99,7 +106,6 @@ function saveToBin() {
         return;
     }
 
-    // A MÁGICA PRA ENGANAR O ERRO 400 ESTÁ AQUI:
     const dadosParaSalvar = historico.length === 0 ? [{"vazio": true}] : historico;
 
     fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
@@ -109,7 +115,7 @@ function saveToBin() {
             'X-Master-Key': API_KEY,
             'X-Bin-Versioning': 'false' 
         },
-        body: JSON.stringify(dadosParaSalvar) // Envia o dado modificado
+        body: JSON.stringify(dadosParaSalvar) 
     })
     .then(response => {
         if (!response.ok) {
