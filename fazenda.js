@@ -1,5 +1,5 @@
-const BIN_ID = "";
-const API_KEY = "";
+const BIN_ID = "6998a16dd0ea881f40ca5bf0";
+const API_KEY = "$2a$10$9cyIi/5q86ZybmWCrVgC4OgaPyvT9Rq4r/OQrR74.rTE5LmaTNo0u";
 const SENHA_ACESSO = "4499";
 
 let historico = [];
