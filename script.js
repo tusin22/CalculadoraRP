@@ -1,9 +1,33 @@
+let BIN_ID = "";
+let API_KEY = "";
 let historico = [];
 
 // Carrega os dados salvos assim que a página abre
 document.addEventListener("DOMContentLoaded", () => {
-    loadHistory();
-    render();
+    if (BIN_ID && API_KEY) {
+        fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+            method: 'GET',
+            headers: {
+                'X-Master-Key': API_KEY
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Erro na requisição: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.record) {
+                historico = Array.isArray(data.record) ? data.record : (data.record.historico || []);
+            }
+            render();
+        })
+        .catch(error => console.error("Erro ao carregar histórico:", error));
+    } else {
+        console.warn("BIN_ID ou API_KEY não configurados. Histórico não carregado.");
+        render();
+    }
 
     // Event Listeners
     document.getElementById("btnCalcular").addEventListener("click", calcular);
@@ -25,29 +49,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 });
-
-function loadHistory() {
-    const dadosSalvos = localStorage.getItem("historicoCalculadora");
-    if (dadosSalvos) {
-        try {
-            const parsed = JSON.parse(dadosSalvos);
-            if (Array.isArray(parsed)) {
-                historico = parsed;
-            } else {
-                console.warn("Formato de dados antigo encontrado. Reiniciando histórico.");
-                localStorage.removeItem("historicoCalculadora");
-                historico = [];
-            }
-        } catch (e) {
-            console.error("Erro ao carregar histórico:", e);
-            historico = [];
-        }
-    }
-}
-
-function saveHistory() {
-    localStorage.setItem("historicoCalculadora", JSON.stringify(historico));
-}
 
 function render() {
     const tabelaLog = document.getElementById("tabelaLog");
@@ -89,6 +90,30 @@ function render() {
     document.getElementById("totLucro").innerText = somaLucro.toLocaleString('pt-BR');
 }
 
+function saveToBin() {
+    if (!BIN_ID || !API_KEY) {
+        console.warn("BIN_ID ou API_KEY não configurados.");
+        return;
+    }
+
+    fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Master-Key': API_KEY
+        },
+        body: JSON.stringify(historico)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Erro na requisição: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => console.log("Histórico salvo com sucesso:", data))
+    .catch(error => console.error("Erro ao salvar histórico:", error));
+}
+
 function formatCurrency(value) {
     return Math.ceil(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }
@@ -126,8 +151,8 @@ function calcular() {
     };
 
     historico.push(novoCalculo);
-    saveHistory();
     render();
+    saveToBin();
 
     valorInput.value = "";
     valorInput.focus();
@@ -135,8 +160,8 @@ function calcular() {
 
 function deletarLinha(index) {
     historico.splice(index, 1);
-    saveHistory();
     render();
+    saveToBin();
 }
 
 function baixarPlanilha() {
@@ -181,7 +206,7 @@ function baixarPlanilha() {
 function limparHistorico() {
     if(confirm("Tem certeza que deseja apagar todo o histórico?")) {
         historico = [];
-        saveHistory();
         render();
+        saveToBin();
     }
 }
