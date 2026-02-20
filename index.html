@@ -6,364 +6,243 @@
     <title>Calculadora de Descontos</title>
 
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f4f4f9;
-        }
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f9; }
+        .app-wrapper { max-width: 600px; } /* Aumentei um pouquinho pra caber o X */
+        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 15px; }
+        input, select, button { padding: 10px; margin: 5px 0; width: 100%; box-sizing: border-box; }
+        
+        button.btn-calcular { background-color: #28a745; color: white; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; }
+        button.btn-calcular:hover { background-color: #218838; }
+        
+        .botoes-acao { margin-top: 10px; display: flex; gap: 10px; }
+        .btn-baixar { background-color: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; padding: 10px; flex: 1; }
+        .btn-baixar:hover { background-color: #0056b3; }
+        .btn-limpar { background-color: #dc3545; color: white; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; padding: 10px; flex: 1; }
+        .btn-limpar:hover { background-color: #c82333; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; font-size: 13px; }
+        th, td { border: 1px solid #ddd; padding: 6px; text-align: center; }
+        th { background-color: #343a40; color: white; }
+        
+        .resumo { background: #e9ecef; padding: 15px; border-radius: 8px; font-weight: bold; font-size: 14px; line-height: 1.5; }
+        
+        table th:nth-child(4), table td:nth-child(4) { background-color: #fff0c2; }
+        table thead th:nth-child(4) { color: #212529; }
+        table tbody td:nth-child(4) { font-weight: bold; }
 
-        .app-wrapper {
-            max-width: 600px;
-        }
-
-        .container {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 15px;
-        }
-
-        input, select, button {
-            padding: 10px;
-            margin: 5px 0;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        button.btn-calcular {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            border-radius: 4px;
-        }
-
-        button.btn-calcular:hover {
-            background-color: #218838;
-        }
-
-        .botoes-acao {
-            margin-top: 10px;
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn-baixar {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            border-radius: 4px;
-            flex: 1;
-        }
-
-        .btn-limpar {
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            border-radius: 4px;
-            flex: 1;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            background: white;
-            font-size: 13px;
-        }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 6px;
-            text-align: center;
-        }
-
-        th {
-            background-color: #343a40;
-            color: white;
-        }
-
-        table th:nth-child(4),
-        table td:nth-child(4) {
-            background-color: #fff0c2;
-        }
-
-        table tbody td:nth-child(4) {
-            font-weight: bold;
-        }
-
-        .resumo {
-            background: #e9ecef;
-            padding: 15px;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        .btn-excluir {
-            background: none;
-            border: none;
-            color: red;
-            cursor: pointer;
-            font-size: 16px;
-        }
+        /* Estilo pro botão de apagar a linha */
+        .btn-excluir { background: none; border: none; color: red; cursor: pointer; font-size: 16px; padding: 0; width: auto; margin: 0; }
+        .btn-excluir:hover { transform: scale(1.2); }
     </style>
 </head>
 
 <body>
 
-<div class="app-wrapper">
-
-    <div class="container">
-        <h2>Calculadora</h2>
-
-        <label>Valor Original (R$):</label>
-        <input type="number" id="valorInput" step="0.01" placeholder="Ex: 150">
-
-        <label>Desconto:</label>
-        <select id="porcentagemInput">
-            <option value="15">15%</option>
-            <option value="14">14%</option>
-            <option value="13">13%</option>
-            <option value="12">12%</option>
-            <option value="11">11%</option>
-        </select>
-
-        <button class="btn-calcular" onclick="calcular()">Calcular e Adicionar</button>
-    </div>
-
-    <div class="resumo">
-        Totais da Sessão:<br>
-        Qtd: <span id="totQtd">0</span> |
-        Orig: R$ <span id="totOriginal">0</span> |
-        Final: R$ <span id="totFinal">0</span> |
-        Lucro: R$ <span id="totLucro">0</span>
-
-        <div class="botoes-acao">
-            <button class="btn-baixar" onclick="baixarPlanilha()">Baixar (CSV)</button>
-            <button class="btn-limpar" onclick="limparHistorico()">Limpar Tudo</button>
+    <div class="app-wrapper">
+        <div class="container">
+            <h2>Calculadora</h2>
+            
+            <label>Valor Original (R$):</label>
+            <input type="number" id="valorInput" placeholder="Ex: 150.00" step="0.01">
+            
+            <label>Desconto:</label>
+            <select id="porcentagemInput">
+                <option value="15">15%</option>
+                <option value="14">14%</option>
+                <option value="13">13%</option>
+                <option value="12">12%</option>
+                <option value="11">11%</option>
+            </select>
+            
+            <button class="btn-calcular" onclick="calcular()">Calcular e Adicionar</button>
         </div>
+
+        <div class="resumo">
+            Totais da Sessão: <br>
+            Qtd: <span id="totQtd">0</span> | 
+            Orig: R$ <span id="totOriginal">0</span> | 
+            Final: R$ <span id="totFinal">0</span> | 
+            Lucro: R$ <span id="totLucro">0</span>
+            
+            <div class="botoes-acao">
+                <button class="btn-baixar" onclick="baixarPlanilha()">Baixar (CSV)</button>
+                <button class="btn-limpar" onclick="limparHistorico()">Limpar Tudo</button>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Hora</th>
+                    <th>Orig.</th>
+                    <th>%</th>
+                    <th>Final</th>
+                    <th>11%</th>
+                    <th>Lucro</th>
+                    <th>🗑️</th>
+                </tr>
+            </thead>
+            <tbody id="tabelaLog">
+            </tbody>
+        </table>
     </div>
 
-    <table>
-        <thead>
-        <tr>
-            <th>Hora</th>
-            <th>Orig.</th>
-            <th>%</th>
-            <th>Final</th>
-            <th>11%</th>
-            <th>Lucro</th>
-            <th>🗑️</th>
-        </tr>
-        </thead>
-        <tbody id="tabelaLog"></tbody>
-    </table>
+    <script>
+        let somaOriginal = 0;
+        let somaFinal = 0;
+        let somaLucro = 0;
+        let contagem = 0;
 
-</div>
-
-<script>
-    const STORAGE_KEY = "historicoCalculadora_v3";
-
-    let itens = [];
-    let somaOriginal = 0;
-    let somaFinal = 0;
-    let somaLucro = 0;
-
-    const elValor = document.getElementById("valorInput");
-    const elPct = document.getElementById("porcentagemInput");
-    const elTabela = document.getElementById("tabelaLog");
-
-    const elTotQtd = document.getElementById("totQtd");
-    const elTotOriginal = document.getElementById("totOriginal");
-    const elTotFinal = document.getElementById("totFinal");
-    const elTotLucro = document.getElementById("totLucro");
-
-    function arredondaPraCima(valor) {
-        return Math.ceil(Number(valor));
-    }
-
-    function horaAgora() {
-        const agora = new Date();
-        return [
-            agora.getHours().toString().padStart(2, "0"),
-            agora.getMinutes().toString().padStart(2, "0"),
-            agora.getSeconds().toString().padStart(2, "0")
-        ].join(":");
-    }
-
-    function atualizarTotais() {
-        elTotQtd.innerText = itens.length;
-        elTotOriginal.innerText = somaOriginal;
-        elTotFinal.innerText = somaFinal;
-        elTotLucro.innerText = somaLucro;
-    }
-
-    function salvar() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({
-            itens,
-            somaOriginal,
-            somaFinal,
-            somaLucro
-        }));
-    }
-
-    function carregar() {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return;
-
-        try {
-            const dados = JSON.parse(raw);
-            itens = dados.itens || [];
-            somaOriginal = dados.somaOriginal || 0;
-            somaFinal = dados.somaFinal || 0;
-            somaLucro = dados.somaLucro || 0;
-
-            renderTabela();
-            atualizarTotais();
-        } catch {
-            localStorage.removeItem(STORAGE_KEY);
-        }
-    }
-
-    function renderTabela() {
-        elTabela.innerHTML = "";
-
-        [...itens].reverse().forEach(item => {
-            const tr = document.createElement("tr");
-
-            tr.innerHTML = `
-                <td>${item.hora}</td>
-                <td>R$ ${item.valor}</td>
-                <td>${item.percentual}%</td>
-                <td>R$ ${item.final}</td>
-                <td>R$ ${item.valor11}</td>
-                <td>R$ ${item.lucro}</td>
-                <td><button class="btn-excluir" data-id="${item.id}">❌</button></td>
-            `;
-
-            elTabela.appendChild(tr);
-        });
-    }
-
-    function calcular() {
-        const valorInput = elValor.value;
-
-        if (!valorInput || Number(valorInput) <= 0) {
-            alert("Insira um valor válido maior que zero.");
-            return;
-        }
-
-        const valor = arredondaPraCima(valorInput);
-        const percentual = Number(elPct.value);
-
-        const final = arredondaPraCima(valor - (valor * percentual / 100));
-        const valor11 = arredondaPraCima(valor - (valor * 0.11));
-        const lucro = arredondaPraCima(valor11 - final);
-
-        const item = {
-            id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
-            hora: horaAgora(),
-            valor,
-            percentual,
-            final,
-            valor11,
-            lucro
+        // Carrega os dados salvos assim que a página abre
+        window.onload = function() {
+            let dadosSalvos = localStorage.getItem("historicoCalculadora");
+            if (dadosSalvos) {
+                let dados = JSON.parse(dadosSalvos);
+                somaOriginal = dados.somaOriginal;
+                somaFinal = dados.somaFinal;
+                somaLucro = dados.somaLucro || 0; // || 0 pra evitar erro se carregar um save antigo
+                contagem = dados.contagem;
+                
+                document.getElementById("totQtd").innerText = contagem;
+                document.getElementById("totOriginal").innerText = somaOriginal;
+                document.getElementById("totFinal").innerText = somaFinal;
+                document.getElementById("totLucro").innerText = somaLucro;
+                document.getElementById("tabelaLog").innerHTML = dados.tabelaHTML;
+            }
         };
 
-        itens.push(item);
-
-        somaOriginal += valor;
-        somaFinal += final;
-        somaLucro += lucro;
-
-        renderTabela();
-        atualizarTotais();
-        salvar();
-
-        elValor.value = "";
-        elValor.focus();
-    }
-
-    function excluirPorId(id) {
-        const idx = itens.findIndex(x => x.id === id);
-        if (idx === -1) return;
-
-        const item = itens[idx];
-
-        somaOriginal -= item.valor;
-        somaFinal -= item.final;
-        somaLucro -= item.lucro;
-
-        itens.splice(idx, 1);
-
-        renderTabela();
-        atualizarTotais();
-        salvar();
-    }
-
-    elTabela.addEventListener("click", (e) => {
-        const btn = e.target.closest("button[data-id]");
-        if (!btn) return;
-        excluirPorId(btn.dataset.id);
-    });
-
-    function baixarPlanilha() {
-        if (itens.length === 0) {
-            alert("A tabela está vazia.");
-            return;
+        // Função para salvar no navegador
+        function salvarNoNavegador() {
+            let dados = {
+                somaOriginal: somaOriginal,
+                somaFinal: somaFinal,
+                somaLucro: somaLucro,
+                contagem: contagem,
+                tabelaHTML: document.getElementById("tabelaLog").innerHTML
+            };
+            localStorage.setItem("historicoCalculadora", JSON.stringify(dados));
+        }
         }
 
-        const header = ["Hora", "Orig", "%", "Final", "11%", "Lucro"];
-        const linhas = itens.map(i => [
-            i.hora,
-            i.valor,
-            i.percentual,
-            i.final,
-            i.valor11,
-            i.lucro
-        ]);
 
-        const csv = [header, ...linhas].map(l => l.join(";")).join("\n");
 
-        const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+        function calcular() {
 
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = "historico_calculos.csv";
-        link.click();
-    }
+            let valor = parseFloat(document.getElementById("valorInput").value);
 
-    function limparHistorico() {
-        if (!confirm("Tem certeza que deseja apagar todo o histórico?")) return;
+            if (isNaN(valor) || valor <= 0) {
 
-        itens = [];
-        somaOriginal = 0;
-        somaFinal = 0;
-        somaLucro = 0;
+                alert("Insira um valor válido maior que zero.");
 
-        renderTabela();
-        atualizarTotais();
-        localStorage.removeItem(STORAGE_KEY);
-    }
+                return;
 
-    elValor.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") calcular();
-    });
+            }
 
-    window.calcular = calcular;
-    window.baixarPlanilha = baixarPlanilha;
-    window.limparHistorico = limparHistorico;
+            let percentual = parseInt(document.getElementById("porcentagemInput").value);
 
-    window.addEventListener("load", carregar);
-</script>
+            let valorDescontado = Math.ceil(valor - (valor * percentual / 100));
+
+            let valor11 = Math.ceil(valor - (valor * 0.11));
+
+            let lucro = Math.ceil(valor11 - valorDescontado);
+
+            let horaFormatada = new Date().toLocaleTimeString();
+
+            let novaLinha = document.getElementById("tabelaLog").insertRow();
+
+            contagem++;
+            somaOriginal += valor;
+            somaFinal += valorDescontado;
+            somaLucro += lucro;
+
+            document.getElementById("totQtd").innerText = contagem;
+            document.getElementById("totOriginal").innerText = somaOriginal;
+            document.getElementById("totFinal").innerText = somaFinal;
+            document.getElementById("totLucro").innerText = somaLucro;
+
+            novaLinha.insertCell(0).innerText = horaFormatada;
+            novaLinha.insertCell(1).innerText = "R$ " + valor;
+            novaLinha.insertCell(2).innerText = percentual + "%";
+            novaLinha.insertCell(3).innerText = "R$ " + valorDescontado;
+            novaLinha.insertCell(4).innerText = "R$ " + valor11;
+            novaLinha.insertCell(5).innerText = "R$ " + lucro;
+            
+            // Cria a célula do botão X com os valores embutidos pra poder subtrair depois
+            novaLinha.insertCell(6).innerHTML = `<button class="btn-excluir" onclick="deletarLinha(this, ${valor}, ${valorDescontado}, ${lucro})">❌</button>`;
+
+            salvarNoNavegador();
+
+            document.getElementById("valorInput").value = "";
+            document.getElementById("valorInput").focus();
+        }
+
+        function deletarLinha(botao, valorOriginalLinha, valorFinalLinha, lucroLinha) {
+            // Subtrai os valores da linha apagada dos totais globais
+            contagem--;
+            somaOriginal -= valorOriginalLinha;
+            somaFinal -= valorFinalLinha;
+            somaLucro -= lucroLinha;
+
+            // Atualiza os textos lá em cima
+            document.getElementById("totQtd").innerText = contagem;
+            document.getElementById("totOriginal").innerText = somaOriginal;
+            document.getElementById("totFinal").innerText = somaFinal;
+            document.getElementById("totLucro").innerText = somaLucro;
+
+            // Apaga a linha inteira da tabela
+            let linha = botao.parentNode.parentNode;
+            linha.parentNode.removeChild(linha);
+
+            // Salva o novo estado sem a linha
+            salvarNoNavegador();
+        }
+
+        function baixarPlanilha() {
+            let csv = [];
+            let linhas = document.querySelectorAll("table tr");
+            
+            if (linhas.length <= 1) {
+                alert("A tabela está vazia. Calcule algo primeiro antes de baixar.");
+                return;
+            }
+            
+            for (let i = 0; i < linhas.length; i++) {
+                let linha = [];
+                let colunas = linhas[i].querySelectorAll("td, th");
+                
+                // Vai só até o length - 1 para ignorar a coluna do botão X
+                for (let j = 0; j < colunas.length - 1; j++) {
+                    let texto = colunas[j].innerText.replace("R$ ", "");
+                    linha.push(texto);
+                }
+                csv.push(linha.join(";"));
+            }
+
+            let csvString = "\uFEFF" + csv.join("\n"); 
+            let blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+            let link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "historico_calculos.csv";
+            link.click();
+        }
+
+        function limparHistorico() {
+            if(confirm("Tem certeza que deseja apagar todo o histórico?")) {
+                somaOriginal = 0;
+                somaFinal = 0;
+                somaLucro = 0;
+                contagem = 0;
+
+                document.getElementById("totQtd").innerText = "0";
+                document.getElementById("totOriginal").innerText = "0";
+                document.getElementById("totFinal").innerText = "0";
+                document.getElementById("totLucro").innerText = "0";
+                document.getElementById("tabelaLog").innerHTML = "";
+
+                localStorage.removeItem("historicoCalculadora");
+            }
+        }
+    </script>
 
 </body>
 </html>
