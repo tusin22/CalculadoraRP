@@ -1,18 +1,10 @@
 const BIN_ID = "6998a16dd0ea881f40ca5bf0";
 const API_KEY = "$2a$10$9cyIi/5q86ZybmWCrVgC4OgaPyvT9Rq4r/OQrR74.rTE5LmaTNo0u";
-const SENHA_ACESSO = "4499";
 
 let historico = [];
 let chartInstance = null;
 
 document.addEventListener("DOMContentLoaded", () => {
-
-    // TRAVA DE SEGURANÇA
-    const tentativa = prompt("Digite a senha para acessar a Fazenda:");
-    if (tentativa !== SENHA_ACESSO) {
-        document.body.innerHTML = "<h2 style='color:white; text-align:center; margin-top:20%; font-family:sans-serif;'>Acesso Negado ❌</h2><div style='text-align:center; margin-top:20px;'><a href='index.html' style='color:#ccc; text-decoration:underline;'>Voltar ao Painel</a></div>";
-        return;
-    }
 
     // Set Date Filter to Today
     const dateInput = document.getElementById("filtroData");
@@ -181,6 +173,7 @@ function render() {
 
     // 2. Calcular Resumo de Lançamentos (Input do Dia)
     const totais = {};
+    let totalLeiteDia = 0;
 
     historico.forEach(item => {
         const itemDate = new Date(item.timestamp);
@@ -192,8 +185,35 @@ function render() {
             }
             totais[item.nome].leite += item.leite;
             totais[item.nome].queijo += item.queijo;
+            totalLeiteDia += item.leite;
         }
     });
+
+    // Calcular e Exibir "Prateleiras Ocupadas"
+    const prateleiras = Math.ceil(totalLeiteDia / 36);
+
+    let displayPrateleiras = document.getElementById("displayPrateleiras");
+    if (!displayPrateleiras) {
+        const container = document.getElementById("resumoDiaContainer");
+        displayPrateleiras = document.createElement("div");
+        displayPrateleiras.id = "displayPrateleiras";
+        displayPrateleiras.style.textAlign = "center";
+        displayPrateleiras.style.marginBottom = "15px";
+        displayPrateleiras.style.padding = "10px";
+        displayPrateleiras.style.backgroundColor = "rgba(0, 123, 255, 0.1)";
+        displayPrateleiras.style.borderRadius = "8px";
+        displayPrateleiras.style.border = "1px solid #007bff";
+
+        // Insert before content
+        container.insertBefore(displayPrateleiras, resumoContent);
+    }
+
+    displayPrateleiras.innerHTML = `
+        <div style="color: #ccc; font-size: 14px; margin-bottom: 5px;">Prateleiras Ocupadas</div>
+        <div style="color: #007bff; font-size: 24px; font-weight: bold; text-shadow: 0 0 10px rgba(0, 123, 255, 0.3);">
+            🗄️ ${prateleiras}
+        </div>
+    `;
 
     if (Object.keys(totais).length === 0) {
         resumoContent.innerHTML = "<div class='resumo-item' style='justify-content:center; color:#666;'>Nenhum registro nesta data.</div>";

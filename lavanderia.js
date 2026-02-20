@@ -1,18 +1,10 @@
 const BIN_ID = "69987a5943b1c97be98e9cc8";
 const API_KEY = "$2a$10$9cyIi/5q86ZybmWCrVgC4OgaPyvT9Rq4r/OQrR74.rTE5LmaTNo0u"; 
-const SENHA_ACESSO = "4499"; 
 let historico = [];
 
 // Carrega os dados salvos assim que a página abre
 document.addEventListener("DOMContentLoaded", () => {
     
-    // TRAVA DE SEGURANÇA
-    const tentativa = prompt("Digite a senha para acessar a calculadora do RP:");
-    if (tentativa !== SENHA_ACESSO) {
-        document.body.innerHTML = "<h2 style='color:white; text-align:center; margin-top:20%; font-family:sans-serif;'>Acesso Negado ❌</h2>";
-        return; 
-    }
-
     if (BIN_ID && API_KEY) {
         fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest?nocache=${Date.now()}`, {
             method: 'GET',
