@@ -5,7 +5,6 @@ let historico = [];
 // Carrega os dados salvos assim que a página abre
 document.addEventListener("DOMContentLoaded", () => {
     if (BIN_ID && API_KEY) {
-        // O nocache=Date.now() força o navegador a buscar o dado real, ignorando lixo salvo
         fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest?nocache=${Date.now()}`, {
             method: 'GET',
             cache: 'no-store',
@@ -21,7 +20,9 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .then(data => {
             if (data.record) {
-                historico = Array.isArray(data.record) ? data.record : [];
+                let puxado = Array.isArray(data.record) ? data.record : [];
+                // IGNORA O ITEM FALSO NA HORA DE LER A TABELA
+                historico = puxado.filter(item => !item.vazio);
             }
             render();
         })
@@ -98,14 +99,17 @@ function saveToBin() {
         return;
     }
 
+    // A MÁGICA PRA ENGANAR O ERRO 400 ESTÁ AQUI:
+    const dadosParaSalvar = historico.length === 0 ? [{"vazio": true}] : historico;
+
     fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
             'X-Master-Key': API_KEY,
-            'X-Bin-Versioning': 'false' // Trava para não gastar o limite de uso criando cópias
+            'X-Bin-Versioning': 'false' 
         },
-        body: JSON.stringify(historico)
+        body: JSON.stringify(dadosParaSalvar) // Envia o dado modificado
     })
     .then(response => {
         if (!response.ok) {
