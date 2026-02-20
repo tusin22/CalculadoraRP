@@ -21,7 +21,12 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .then(data => {
             if (data.record) {
-                historico = Array.isArray(data.record) ? data.record : [];
+                // Se o JSONBin retornar o objeto falso, tratamos como histórico vazio
+                if (Array.isArray(data.record) && data.record.length === 1 && data.record[0].vazio) {
+                    historico = [];
+                } else {
+                    historico = Array.isArray(data.record) ? data.record : [];
+                }
             }
             render();
         })
@@ -98,6 +103,9 @@ function saveToBin() {
         return;
     }
 
+    // Se o histórico estiver vazio, envia um objeto falso para o JSONBin aceitar a atualização
+    const dadosParaSalvar = historico.length === 0 ? [{ "vazio": true }] : historico;
+
     fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
         method: 'PUT',
         headers: {
@@ -105,7 +113,7 @@ function saveToBin() {
             'X-Master-Key': API_KEY,
             'X-Bin-Versioning': 'false' // Trava para não gastar o limite de uso criando cópias
         },
-        body: JSON.stringify(historico)
+        body: JSON.stringify(dadosParaSalvar)
     })
     .then(response => {
         if (!response.ok) {
