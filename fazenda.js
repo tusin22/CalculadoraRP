@@ -123,10 +123,16 @@ function render() {
     resumoContent.innerHTML = "";
 
     // 1. Calcular e Exibir "Queijo Pronto para Colher" (Regra 10h)
-    let totalQueijoPronto = 0;
+    const totaisProntos = {};
+    let temQueijoPronto = false;
+
     historico.forEach(item => {
         if (item.timestamp && isReadyOnDate(item.timestamp, selectedDateStr)) {
-            totalQueijoPronto += item.queijo;
+            if (!totaisProntos[item.nome]) {
+                totaisProntos[item.nome] = 0;
+            }
+            totaisProntos[item.nome] += item.queijo;
+            temQueijoPronto = true;
         }
     });
 
@@ -142,16 +148,36 @@ function render() {
         displayDiv.style.borderRadius = "8px";
         displayDiv.style.border = "1px solid #ffc107";
 
-        // Insert before content but after header (which is implicitly handled by insertBefore on existing child)
+        // Insert before content but after header
         container.insertBefore(displayDiv, resumoContent);
     }
 
-    displayDiv.innerHTML = `
-        <div style="color: #ccc; font-size: 14px; margin-bottom: 5px;">Queijo Pronto para Colher</div>
-        <div style="color: #ffc107; font-size: 32px; font-weight: bold; text-shadow: 0 0 10px rgba(255, 193, 7, 0.3);">
-            🧀 ${totalQueijoPronto}
-        </div>
-    `;
+    if (!temQueijoPronto) {
+         displayDiv.innerHTML = `
+            <div style="color: #ccc; font-size: 14px; margin-bottom: 5px;">Queijo Pronto para Colher</div>
+            <div style="color: #ffc107; font-size: 24px; font-weight: bold; opacity: 0.7;">
+                0
+            </div>
+        `;
+    } else {
+        let htmlContent = `<div style="color: #ccc; font-size: 14px; margin-bottom: 10px;">Queijo Pronto para Colher</div>`;
+        htmlContent += `<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px;">`;
+
+        Object.keys(totaisProntos).sort().forEach(nome => {
+            const qtd = totaisProntos[nome];
+            htmlContent += `
+                <div style="text-align: center;">
+                    <div style="color: #fff; font-size: 14px; margin-bottom: 2px;">${nome}</div>
+                    <div style="color: #ffc107; font-size: 24px; font-weight: bold; text-shadow: 0 0 10px rgba(255, 193, 7, 0.3);">
+                        🧀 ${qtd}
+                    </div>
+                </div>
+            `;
+        });
+
+        htmlContent += `</div>`;
+        displayDiv.innerHTML = htmlContent;
+    }
 
     // 2. Calcular Resumo de Lançamentos (Input do Dia)
     const totais = {};
