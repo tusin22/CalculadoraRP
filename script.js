@@ -57,7 +57,11 @@ function render() {
     let somaFinal = 0;
     let somaLucro = 0;
 
-    historico.forEach((item, index) => {
+    const fragment = document.createDocumentFragment();
+
+    // Iterate in reverse to show newest first (LIFO visual)
+    for (let i = historico.length - 1; i >= 0; i--) {
+        const item = historico[i];
         somaOriginal += item.original;
         somaFinal += item.final;
         somaLucro += item.lucro;
@@ -71,12 +75,13 @@ function render() {
             <td>${formatCurrency(item.final)}</td>
             <td>${formatCurrency(item.valor11)}</td>
             <td>${formatCurrency(item.lucro)}</td>
-            <td><button class="btn-excluir" data-index="${index}" aria-label="Excluir linha">❌</button></td>
+            <td><button class="btn-excluir" data-index="${i}" aria-label="Excluir linha">❌</button></td>
         `;
 
-        // Prepend to show newest first (LIFO visual, but FIFO array)
-        tabelaLog.insertBefore(row, tabelaLog.firstChild);
-    });
+        fragment.appendChild(row);
+    }
+
+    tabelaLog.appendChild(fragment);
 
     document.getElementById("totQtd").innerText = historico.length;
     document.getElementById("totOriginal").innerText = somaOriginal.toLocaleString('pt-BR');
