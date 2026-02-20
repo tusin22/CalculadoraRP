@@ -1,0 +1,27 @@
+body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f9; }
+.app-wrapper { max-width: 600px; } /* Aumentei um pouquinho pra caber o X */
+.container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 15px; }
+input, select, button { padding: 10px; margin: 5px 0; width: 100%; box-sizing: border-box; }
+
+button.btn-calcular { background-color: #28a745; color: white; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; }
+button.btn-calcular:hover { background-color: #218838; }
+
+.botoes-acao { margin-top: 10px; display: flex; gap: 10px; }
+.btn-baixar { background-color: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; padding: 10px; flex: 1; }
+.btn-baixar:hover { background-color: #0056b3; }
+.btn-limpar { background-color: #dc3545; color: white; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; padding: 10px; flex: 1; }
+.btn-limpar:hover { background-color: #c82333; }
+
+table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; font-size: 13px; }
+th, td { border: 1px solid #ddd; padding: 6px; text-align: center; }
+th { background-color: #343a40; color: white; }
+
+.resumo { background: #e9ecef; padding: 15px; border-radius: 8px; font-weight: bold; font-size: 14px; line-height: 1.5; }
+
+table th:nth-child(4), table td:nth-child(4) { background-color: #fff0c2; }
+table thead th:nth-child(4) { color: #212529; }
+table tbody td:nth-child(4) { font-weight: bold; }
+
+/* Estilo pro botão de apagar a linha */
+.btn-excluir { background: none; border: none; color: red; cursor: pointer; font-size: 16px; padding: 0; width: auto; margin: 0; }
+.btn-excluir:hover { transform: scale(1.2); }
