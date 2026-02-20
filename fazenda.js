@@ -159,10 +159,10 @@ function render() {
             const qtd = totaisProntos[nome];
             htmlContent += `
                 <div style="text-align: center;">
-                    <div style="color: #fff; font-size: 14px; margin-bottom: 2px;">${nome}</div>
                     <div style="color: #ffc107; font-size: 24px; font-weight: bold; text-shadow: 0 0 10px rgba(255, 193, 7, 0.3);">
                         🧀 ${qtd}
                     </div>
+                    <div style="color: #fff; font-size: 14px; margin-top: 2px;">${nome}</div>
                 </div>
             `;
         });
