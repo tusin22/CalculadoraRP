@@ -5,6 +5,18 @@ let historico = [];
 
 document.addEventListener("DOMContentLoaded", () => {
 
+    // Populate Select from CONFIG
+    const nomeInput = document.getElementById("nomeInput");
+    if (typeof CONFIG !== 'undefined' && CONFIG.jogadores) {
+        nomeInput.innerHTML = "";
+        CONFIG.jogadores.forEach(nome => {
+            const option = document.createElement("option");
+            option.value = nome;
+            option.textContent = nome;
+            nomeInput.appendChild(option);
+        });
+    }
+
     // Set Date Filter to Today
     const dateInput = document.getElementById("filtroData");
     const today = new Date();
@@ -70,8 +82,9 @@ function getLocalDateString(dateObj) {
 
 function isReadyOnDate(timestamp, selectedDateStr) {
     const entryDate = new Date(timestamp);
-    // Add 10 hours (10 * 60 * 60 * 1000 ms)
-    const readyDate = new Date(entryDate.getTime() + 10 * 60 * 60 * 1000);
+    // Use CONFIG.tempoQueijoHoras
+    const hours = (typeof CONFIG !== 'undefined' && CONFIG.tempoQueijoHoras) ? CONFIG.tempoQueijoHoras : 10;
+    const readyDate = new Date(entryDate.getTime() + hours * 60 * 60 * 1000);
     const readyDateStr = getLocalDateString(readyDate);
     return readyDateStr === selectedDateStr;
 }
@@ -113,17 +126,22 @@ function render() {
     const resumoContent = document.getElementById("resumoDiaContent");
     resumoContent.innerHTML = "";
 
-    // 1. Calcular e Exibir "Queijo Pronto para Colher" (Regra 10h)
+    // 1. Calcular "Queijo Pronto para Colher"
     const totaisProntos = {};
-    let temQueijoPronto = false;
+
+    // Initialize with CONFIG.jogadores
+    if (typeof CONFIG !== 'undefined' && CONFIG.jogadores) {
+        CONFIG.jogadores.forEach(nome => {
+            totaisProntos[nome] = 0;
+        });
+    }
 
     historico.forEach(item => {
         if (item.timestamp && isReadyOnDate(item.timestamp, selectedDateStr)) {
-            if (!totaisProntos[item.nome]) {
+            if (totaisProntos[item.nome] === undefined) {
                 totaisProntos[item.nome] = 0;
             }
             totaisProntos[item.nome] += item.queijo;
-            temQueijoPronto = true;
         }
     });
 
@@ -143,36 +161,38 @@ function render() {
         container.insertBefore(displayDiv, resumoContent);
     }
 
-    if (!temQueijoPronto) {
-         displayDiv.innerHTML = `
-            <div style="color: #ccc; font-size: 14px; margin-bottom: 5px;">Queijo Pronto para Colher</div>
-            <div style="color: #ffc107; font-size: 24px; font-weight: bold; opacity: 0.7;">
-                0
+    // Display Logic
+    let htmlContent = `<div style="color: #ccc; font-size: 14px; margin-bottom: 10px;">Queijo Pronto para Colher</div>`;
+    htmlContent += `<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px;">`;
+
+    const nomesParaExibir = Object.keys(totaisProntos).sort();
+
+    nomesParaExibir.forEach(nome => {
+        const qtd = totaisProntos[nome];
+        htmlContent += `
+            <div style="text-align: center;">
+                <div style="color: #ffc107; font-size: 24px; font-weight: bold; text-shadow: 0 0 10px rgba(255, 193, 7, 0.3);">
+                    🧀 ${qtd}
+                </div>
+                <div style="color: #fff; font-size: 14px; margin-top: 2px;">${nome}</div>
             </div>
         `;
-    } else {
-        let htmlContent = `<div style="color: #ccc; font-size: 14px; margin-bottom: 10px;">Queijo Pronto para Colher</div>`;
-        htmlContent += `<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px;">`;
+    });
 
-        Object.keys(totaisProntos).sort().forEach(nome => {
-            const qtd = totaisProntos[nome];
-            htmlContent += `
-                <div style="text-align: center;">
-                    <div style="color: #ffc107; font-size: 24px; font-weight: bold; text-shadow: 0 0 10px rgba(255, 193, 7, 0.3);">
-                        🧀 ${qtd}
-                    </div>
-                    <div style="color: #fff; font-size: 14px; margin-top: 2px;">${nome}</div>
-                </div>
-            `;
-        });
+    htmlContent += `</div>`;
+    displayDiv.innerHTML = htmlContent;
 
-        htmlContent += `</div>`;
-        displayDiv.innerHTML = htmlContent;
-    }
 
     // 2. Calcular Resumo de Lançamentos (Input do Dia)
     const totais = {};
     let totalLeiteDia = 0;
+
+    // Initialize with CONFIG.jogadores
+    if (typeof CONFIG !== 'undefined' && CONFIG.jogadores) {
+        CONFIG.jogadores.forEach(nome => {
+            totais[nome] = { leite: 0, queijo: 0 };
+        });
+    }
 
     historico.forEach(item => {
         const itemDate = new Date(item.timestamp);
@@ -189,7 +209,8 @@ function render() {
     });
 
     // Calcular e Exibir "Prateleiras Ocupadas"
-    const prateleiras = Math.ceil(totalLeiteDia / 36);
+    const milkPerShelf = (typeof CONFIG !== 'undefined' && CONFIG.leitePorPrateleira) ? CONFIG.leitePorPrateleira : 36;
+    const prateleiras = Math.ceil(totalLeiteDia / milkPerShelf);
 
     let displayPrateleiras = document.getElementById("displayPrateleiras");
     if (!displayPrateleiras) {
@@ -214,17 +235,14 @@ function render() {
         </div>
     `;
 
-    if (Object.keys(totais).length === 0) {
-        resumoContent.innerHTML = "<div class='resumo-item' style='justify-content:center; color:#666;'>Nenhum registro nesta data.</div>";
-    } else {
-        Object.keys(totais).sort().forEach(nome => {
-            const dados = totais[nome];
-            const div = document.createElement("div");
-            div.className = "resumo-item";
-            div.innerHTML = `<span style="color:#fff">${nome}</span> <span style="color:#ffc107; font-weight:bold;">🥛 ${dados.leite} &nbsp;|&nbsp; 🧀 ${dados.queijo}</span>`;
-            resumoContent.appendChild(div);
-        });
-    }
+    // Render "Resumo de Lançamentos" lines
+    Object.keys(totais).sort().forEach(nome => {
+        const dados = totais[nome];
+        const div = document.createElement("div");
+        div.className = "resumo-item";
+        div.innerHTML = `<span style="color:#fff">${nome}</span> <span style="color:#ffc107; font-weight:bold;">🥛 ${dados.leite} &nbsp;|&nbsp; 🧀 ${dados.queijo}</span>`;
+        resumoContent.appendChild(div);
+    });
 
 }
 
