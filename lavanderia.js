@@ -1,39 +1,19 @@
-const BIN_ID = "69987a5943b1c97be98e9cc8";
-const API_KEY = "$2a$10$9cyIi/5q86ZybmWCrVgC4OgaPyvT9Rq4r/OQrR74.rTE5LmaTNo0u"; 
 let historico = [];
 
 // Carrega os dados salvos assim que a página abre
 document.addEventListener("DOMContentLoaded", () => {
     
-    if (BIN_ID && API_KEY) {
-        fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest?nocache=${Date.now()}`, {
-            method: 'GET',
-            cache: 'no-store',
-            headers: {
-                'X-Master-Key': API_KEY
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Erro na requisição: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.record) {
-                let puxado = Array.isArray(data.record) ? data.record : [];
-                historico = puxado.filter(item => !item.vazio);
-            }
-            render();
-        })
-        .catch(error => {
-            console.error("Erro ao carregar histórico:", error);
-            render(); 
-        });
-    } else {
-        console.warn("BIN_ID ou API_KEY não configurados.");
-        render();
+    // Load from LocalStorage
+    const storedData = localStorage.getItem("lavanderia_historico");
+    if (storedData) {
+        try {
+            historico = JSON.parse(storedData);
+        } catch (e) {
+            console.error("Erro ao ler localStorage", e);
+            historico = [];
+        }
     }
+    render();
 
     // Event Listeners
     document.getElementById("btnCalcular").addEventListener("click", calcular);
@@ -93,30 +73,8 @@ function render() {
     document.getElementById("totLucro").innerText = somaLucro.toLocaleString('pt-BR');
 }
 
-function saveToBin() {
-    if (!BIN_ID || !API_KEY) {
-        return;
-    }
-
-    const dadosParaSalvar = historico.length === 0 ? [{"vazio": true}] : historico;
-
-    fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-Master-Key': API_KEY,
-            'X-Bin-Versioning': 'false' 
-        },
-        body: JSON.stringify(dadosParaSalvar) 
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`Erro na requisição: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(data => console.log("Histórico salvo com sucesso!"))
-    .catch(error => console.error("Erro ao salvar histórico:", error));
+function saveToLocalStorage() {
+    localStorage.setItem("lavanderia_historico", JSON.stringify(historico));
 }
 
 function formatCurrency(value) {
@@ -156,7 +114,7 @@ function calcular() {
 
     historico.push(novoCalculo);
     render();
-    saveToBin();
+    saveToLocalStorage();
 
     valorInput.value = "";
     valorInput.focus();
@@ -165,7 +123,7 @@ function calcular() {
 function deletarLinha(index) {
     historico.splice(index, 1);
     render();
-    saveToBin();
+    saveToLocalStorage();
 }
 
 function baixarPlanilha() {
@@ -200,6 +158,6 @@ function limparHistorico() {
     if(confirm("Tem certeza que deseja apagar todo o histórico?")) {
         historico = [];
         render();
-        saveToBin();
+        saveToLocalStorage();
     }
 }
