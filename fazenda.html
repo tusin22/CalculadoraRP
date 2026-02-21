@@ -33,7 +33,7 @@
             <div id="resumoDiaContainer">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <h3 style="margin: 0; color: #ffc107; font-size: 16px;">Resumo do Dia</h3>
-                    <input type="date" id="filtroData" style="padding: 5px; border-radius: 4px; border: 1px solid #444; background: #2a2a2a; color: #fff;">
+                    <input type="date" id="filtroData" aria-label="Filtrar resumo por data" style="padding: 5px; border-radius: 4px; border: 1px solid #444; background: #2a2a2a; color: #fff;">
                 </div>
                 <div id="resumoDiaContent">
                     <!-- Dynamic Content -->
@@ -53,7 +53,7 @@
                     <th>Nome</th>
                     <th>Leite</th>
                     <th>Queijo</th>
-                    <th>🗑️</th>
+                    <th aria-label="Excluir registro">🗑️</th>
                 </tr>
             </thead>
             <tbody id="tabelaLog">
