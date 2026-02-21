@@ -93,6 +93,11 @@ function calcular() {
         return;
     }
 
+    if (porcentagemStr === "") {
+        alert("Insira uma porcentagem válida.");
+        return;
+    }
+
     const valor = Math.ceil(parseFloat(valorStr));
     const percentual = parseFloat(porcentagemStr);
 

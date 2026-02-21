@@ -19,14 +19,8 @@
             <label for="valorInput">Valor Original (R$):</label>
             <input type="number" id="valorInput" placeholder="Ex: 150.00" step="0.01">
 
-            <label for="porcentagemInput">Desconto:</label>
-            <select id="porcentagemInput">
-                <option value="15">15%</option>
-                <option value="14">14%</option>
-                <option value="13">13%</option>
-                <option value="12">12%</option>
-                <option value="11">11%</option>
-            </select>
+            <label for="porcentagemInput">Desconto (%):</label>
+            <input type="number" id="porcentagemInput" placeholder="Ex: 15" step="0.1" min="0" max="100">
 
             <button class="btn-calcular" id="btnCalcular">Calcular e Adicionar</button>
         </div>

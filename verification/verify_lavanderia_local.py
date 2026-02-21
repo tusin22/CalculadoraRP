@@ -11,6 +11,7 @@ def run(playwright):
 
     # Add an item
     page.fill("#valorInput", "100")
+    page.fill("#porcentagemInput", "15")
     page.click("#btnCalcular")
 
     # Check if item exists in table
